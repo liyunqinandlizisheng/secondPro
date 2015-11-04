@@ -1,0 +1,250 @@
+//
+//  AddOtherSecondViewController.m
+//  MobileOffice
+//
+//  Created by Wenrui on 15/10/8.
+//  Copyright (c) 2015年 Wenrui. All rights reserved.
+//
+
+#import "AddOtherSecondViewController.h"
+#import "Const.h"
+#import "CCHomeListData.h"
+#import "CCAppClassData.h"
+#import "OtherSecondCell.h"
+#import "Library.h"
+#import "UIImageView+WebCache.h"
+
+@interface AddOtherSecondViewController ()
+
+@end
+
+@implementation AddOtherSecondViewController
+
+@synthesize m_AppClassData;
+@synthesize m_AddOtherSecondTable, m_ArrList;
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view.
+    
+    self.view.backgroundColor = [UIColor whiteColor];
+    
+    UIImageView *topView = [[UIImageView alloc] initWithFrame:CGRectMake(0.0, 0, SCREEN_WIDTH, IOS6?44:64)];
+    topView.backgroundColor = [UIColor colorWithRed:0.15f green:0.25f blue:0.60f alpha:1.00f];
+    topView.tag = 4013;
+    topView.userInteractionEnabled = YES;
+    [self.view addSubview:topView];
+    
+    UIButton *backBtn = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+    backBtn.frame = CGRectMake(0.0, 20.0, 30.0, 10.0);
+    [backBtn setTitle:@"<" forState:UIControlStateNormal];
+    backBtn.backgroundColor = [UIColor yellowColor];
+    [backBtn addTarget:self action:@selector(toggleBackBtn:) forControlEvents:UIControlEventTouchUpInside];
+    [topView addSubview:backBtn];
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+/*
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+
+
+- (void)toggleBackBtn:(id)sender
+{
+    [self.navigationController popViewControllerAnimated:YES];
+}
+
+
+- (id)initWithAppClassData:(CCAppClassData *)appClassData
+{
+    if (self = [super init])
+    {
+        self.m_AppClassData = appClassData;
+        
+        CCGetHomeList *getHomeList = [[CCGetHomeList alloc] init];
+        getHomeList.delegate = self;
+        [getHomeList getHomeList:GetHomeList];
+    }
+    
+    return self;
+}
+
+
+#pragma mark -
+#pragma mark UITableViewDelegate
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    OtherSecondCell *cell = (OtherSecondCell *)[tableView dequeueReusableCellWithIdentifier:@"ID"];
+    
+    if (!cell)
+    {
+        cell = [[OtherSecondCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:@"ID"];
+        cell.backgroundColor = [UIColor clearColor];
+        
+        UIImageView *imagev = [[UIImageView alloc] init];
+        imagev.backgroundColor = [UIColor colorWithRed:226/255.0 green:230/255.0 blue:232/255.0 alpha:1];
+        cell.selectedBackgroundView = imagev;
+        
+        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+    }
+    
+    CCHomeListData *homeListData = [m_ArrList objectAtIndex:indexPath.row];
+    
+    [cell.m_Icon setImageWithURL:[NSURL URLWithString:homeListData.m_StrIcon] placeholderImage:[UIImage imageNamed:@"loadingBottomImg.png"]];
+    cell.m_NameLbl.text = homeListData.m_StrAppName;
+    
+    return cell;
+}
+
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    return 60.0;
+}
+
+
+- (NSInteger) tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+    return [m_ArrList count];
+}
+
+-(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+{
+//    CCAppClassData *appClassData = [m_ArrList objectAtIndex:indexPath.row];
+//    
+//    AddOtherSecondViewController *addOtherSecondViewCtrl = [[AddOtherSecondViewController alloc] initWithAppClassData:appClassData];
+//    [self.navigationController pushViewController:addOtherSecondViewCtrl animated:NO];
+    
+    CCHomeListData *homeListData = [m_ArrList objectAtIndex:indexPath.row];
+    
+    NSIndexPath *path = [m_AddOtherSecondTable indexPathForSelectedRow];
+    
+    OtherSecondCell *cell = (OtherSecondCell *)[m_AddOtherSecondTable cellForRowAtIndexPath:path];
+    cell.m_bIsSelected = !cell.m_bIsSelected;
+    
+    if (cell.m_bIsSelected)
+    {
+//        NSLog(@"homeListData = %@", homeListData);
+//        NSLog(@"name = %@", homeListData.m_StrAppName);
+//        NSLog(@"ddd = %@", homeListData.m_StrAppClassCode);
+//        NSLog(@"sort = %@", homeListData.m_StrAppSort);
+        
+        Library *library = [[Library alloc] init];
+        BOOL bRet = [library save:homeListData];
+        
+        if (bRet)
+        {
+            cell.m_SelectedView.image = [UIImage imageNamed:@"checkbox_checked"];
+            
+            CCAddDeleteCommon *addDeleteCommon = [[CCAddDeleteCommon alloc] init];
+            addDeleteCommon.delegate = self;
+            [addDeleteCommon addDeleteCommon:[NSString stringWithFormat:@"%@%@", ADDDELETECOMMON, TRUE_KEY]];
+        }
+        else
+        {
+            cell.m_SelectedView.image = [UIImage imageNamed:@"checkbox_default"];
+        }
+        
+    }
+    else
+    {
+        Library *library = [[Library alloc] init];
+        BOOL bRet = [library removeSaveInfo:homeListData.m_StrPK];
+        
+        if (bRet)
+        {
+            cell.m_SelectedView.image = [UIImage imageNamed:@"checkbox_default"];
+            
+            CCAddDeleteCommon *addDeleteCommon = [[CCAddDeleteCommon alloc] init];
+            addDeleteCommon.delegate = self;
+            [addDeleteCommon addDeleteCommon:[NSString stringWithFormat:@"%@%@", ADDDELETECOMMON, FALSE_KEY]];
+        }
+        else
+        {
+            cell.m_SelectedView.image = [UIImage imageNamed:@"checkbox_checked"];
+        }
+    }
+}
+
+
+#pragma mark -
+#pragma mark GetHomeListDelegate
+- (void)returnHome:(BOOL)bRet andArrHomeList:(NSArray *)homeList
+{
+    if (!bRet)
+    {
+        return;
+    }
+    
+    NSMutableArray *muArrCurrentPageList = [[NSMutableArray alloc] initWithCapacity:0];
+    
+    for (int j = 0; j < [homeList count]; j ++)
+    {
+        CCHomeListData *homeListData = [homeList objectAtIndex:j];
+        
+        NSLog(@"m_StrAppClassCode = %@", homeListData.m_StrAppClassCode);
+        NSLog(@"m_StrAppClassName = %@", m_AppClassData.m_StrAppClass);
+        NSLog(@"name = %@", homeListData.m_StrAppName);
+        
+        if ([m_AppClassData.m_StrAppClass isEqualToString:homeListData.m_StrAppClassCode])
+        {
+            //NSLog(@"appSort = %@", homeListData.m_StrAppSort);
+            
+            [muArrCurrentPageList addObject:homeListData];
+        }
+    }
+    
+    NSMutableArray *arrSaveList = [[NSMutableArray alloc] initWithCapacity:0];
+    Library *library = [[Library alloc] init];
+    [library getSaveList:&arrSaveList];
+    
+    for (int i = 0; i < arrSaveList.count; i ++)
+    {
+        CCHomeListData *homeListDataSave = [arrSaveList objectAtIndex:i];
+        
+        for (int index = 0; index < muArrCurrentPageList.count; index ++)
+        {
+            CCHomeListData *homeListData = [muArrCurrentPageList objectAtIndex:index];
+            
+            if ([homeListData.m_StrAppName isEqualToString:homeListDataSave.m_StrAppName])
+            {
+                [muArrCurrentPageList removeObject:homeListData];
+            }
+        }
+    }
+    
+
+    
+    self.m_ArrList = nil;
+    self.m_ArrList = muArrCurrentPageList;
+    
+    m_AddOtherSecondTable = [[UITableView alloc] initWithFrame:CGRectMake(0.0, IOS6?44:64, SCREEN_WIDTH, SCREEN_HEIGHT-(IOS6?44:64)) style:UITableViewStylePlain];
+    m_AddOtherSecondTable.delegate = self;
+    m_AddOtherSecondTable.dataSource = self;
+    //m_AddOtherSecondTable.backgroundColor = [UIColor clearColor];
+    //m_AddOtherSecondTable.separatorColor = [UIColor clearColor];
+    //m_AddOtherSecondTable.separatorStyle = UITableViewCellSeparatorStyleNone;
+    [self.view addSubview:m_AddOtherSecondTable];
+    
+}
+
+
+#pragma mark -
+#pragma mark AddDeleteCommonDelegate
+- (void)returnAddDelete:(BOOL)bRet
+{
+    
+}
+
+
+@end

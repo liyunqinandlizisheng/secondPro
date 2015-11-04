@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>B6FCB8AC-9BF7-4FB0-A070-82A308BC7F0E</string>
+	<key>IDESourceControlProjectName</key>
+	<string>MobileOffice</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>ddb2e1d1-6e1a-fa4d-97c6-09b697d60563++4110</key>
+		<string>https://123.125.195.178:8443/svn/mobile-develop/IOS/MobileOffice</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>MobileOffice.xcodeproj</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>ddb2e1d1-6e1a-fa4d-97c6-09b697d60563++4110</key>
+		<string>../..</string>
+	</dict>
+	<key>IDESourceControlProjectRepositoryRootDictionary</key>
+	<dict>
+		<key>ddb2e1d1-6e1a-fa4d-97c6-09b697d60563++4110</key>
+		<string>https://123.125.195.178:8443/svn/mobile-develop</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>https://123.125.195.178:8443/svn/mobile-develop/IOS/MobileOffice/MobileOffice.xcodeproj</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>111</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>ddb2e1d1-6e1a-fa4d-97c6-09b697d60563++4110</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.subversion</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>ddb2e1d1-6e1a-fa4d-97c6-09b697d60563++4110</string>
+			<key>IDESourceControlWCCName</key>
+			<string>MobileOffice</string>
+		</dict>
+	</array>
+</dict>
+</plist>

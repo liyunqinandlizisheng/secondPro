@@ -1,0 +1,13 @@
+//
+//  CCSetReadOrNotRead.m
+//  MobileOffice
+//
+//  Created by Wenrui on 15/10/21.
+//  Copyright (c) 2015年 Wenrui. All rights reserved.
+//
+
+#import "CCSetReadOrNotRead.h"
+
+@implementation CCSetReadOrNotRead
+
+@end

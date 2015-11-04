@@ -1,0 +1,70 @@
+//
+//  Const.h
+//  UniversalPlayer
+//
+//  Created by Wenrui on 15/6/18.
+//  Copyright (c) 2015年 Wenrui. All rights reserved.
+//
+
+#import <Foundation/Foundation.h>
+
+#define isIPhone ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone)
+
+#define iPhone4 ([UIScreen instancesRespondToSelector:@selector(currentMode)] ? CGSizeEqualToSize(CGSizeMake(640, 960), [[UIScreen mainScreen] currentMode].size) : NO)
+
+#define iPhone5 ([UIScreen instancesRespondToSelector:@selector(currentMode)] ? CGSizeEqualToSize(CGSizeMake(640, 1136), [[UIScreen mainScreen] currentMode].size) : NO)
+
+#define iPhone6 ([UIScreen instancesRespondToSelector:@selector(currentMode)] ? (CGSizeEqualToSize(CGSizeMake(750, 1334), [[UIScreen mainScreen] currentMode].size) || CGSizeEqualToSize(CGSizeMake(640, 1136), [[UIScreen mainScreen] currentMode].size)) : NO)
+
+#define iPhone6plus ([UIScreen instancesRespondToSelector:@selector(currentMode)] ? (CGSizeEqualToSize(CGSizeMake(1125, 2001), [[UIScreen mainScreen] currentMode].size) || CGSizeEqualToSize(CGSizeMake(1242, 2208), [[UIScreen mainScreen] currentMode].size)) : NO)
+
+//#define PLAYURL         @"http://vod.cntv.lxdns.com/flash/mp4video41/TMS/wuxi/2015/05/01/0927aa78e1294c12b1d4c51f67505f77_h264418000nero_aac32.mp4"
+//#define PLAYURL         @"http://7xkg5z.com1.z0.glb.clouddn.com/alamutu%20advertising%20video.mp4"
+//#define PLAYURL         @"http://video.bcloud.brtn.cn/c0/28/c028af40-4289-021f-8af5-8f3b0f0ad7f7/mp4h.mp4"
+//#define PLAYURL         @"http://58.68.252.133/livebak/ch1.m3u8"
+//#define PLAYURL         @"http://58.68.252.133/livebak/ch1.m3u8"
+//#define PLAYURL         @"rtmp://fxms.chinacloudapp.cn:1935/wangju_fmle/655909944"
+//#define PLAYURL         @"http://58.68.252.133/livebak/ch1.m3u8"
+#define PLAYURL         @"http://58.68.252.133:1935/live/cctv1.stream/palylist.m3u8"
+
+//#define PLAYURL         @"rtmp://fxms.chinacloudapp.cn:1935/wangju_fmle/594474591"
+
+#define SCREEN_WIDTH    [[UIScreen mainScreen] bounds].size.width
+#define SCREEN_HEIGHT   [[UIScreen mainScreen] bounds].size.height
+
+#define IOS7 ([[[UIDevice currentDevice] systemVersion]floatValue] >= 7.0 && [[[UIDevice currentDevice] systemVersion]floatValue] < 8.0)
+#define IOS6 ([[[UIDevice currentDevice] systemVersion]floatValue] < 7.0)
+#define  ViewBarHeight 49  //barHeight
+
+#define IOS8 ([[[UIDevice currentDevice] systemVersion]floatValue] >= 8.0 && [[[UIDevice currentDevice] systemVersion]floatValue] < 9.0)
+
+#define GetHomeList     @"http://10.3.2.4:8080/crimobile/phone/getMAppJson.do?jsessionid=C275FA7701F63FAF285E498A1FDFF246"
+#define GetMessageList  @"http://10.3.2.4:8080/crimobile/phone/getMessageByReceiver.do?userCode=admin"
+#define ADDDELETECOMMON @"http://10.3.2.4:8080/crimobile/phone/updateUserApp.do?userCode=admin&appCode=news&flag="
+//#define GetHomeList     @"http://10.3.2.4:8080/crimobile/phone/getMAppJson.do"
+#define GETTGT          @"http://58.68.255.207:8080/cricas/v1/tickets"
+#define GETAPPCLASS     @"http://10.3.2.4:8080/crimobile/phone/getAppClass.do"
+#define MYINFO          @"http://10.3.2.4:8080/crimobile/phone/getUserInformationByCode.do?userCode=admin"
+
+#define TRUE_KEY        @"true"
+#define FALSE_KEY       @"false"
+
+#define VALUE_KEY       @"valueKey"
+#define NAME_KEY        @"nameKey"
+#define VERSION_KEY     @"versionKey"
+#define PATH_KEY        @"pathKey"
+#define DOMAIN_KEY      @"domainKey"
+#define EXPIRESDATE_KEY @"expiresDateKey"
+#define CREATED_KEY     @"createdKey"
+#define SESSIONONLY_KEY @"sessionOnlyKey"
+#define SECURE_KEY      @"secureKey"
+
+#define IMAGE_FRONT     @"http://10.3.2.4:8080/emp/"
+
+#define TGT_KEY         @"tgtKey"
+
+
+
+@interface Const : NSObject
+
+@end

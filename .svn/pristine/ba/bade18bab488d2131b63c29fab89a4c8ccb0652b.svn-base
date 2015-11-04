@@ -1,0 +1,184 @@
+
+//
+//  RootViewController.m
+//  NewProject
+//
+//  Created by 学鸿 张 on 13-11-29.
+//  Copyright (c) 2013年 Steven. All rights reserved.
+//
+
+#import "RootViewController.h"
+#import "MOTopView.h"
+#import "Const.h"
+#import "MySaoDetailVC.h"
+#import "CCGetST.h"
+
+@interface RootViewController () <CCGetStDelegate>
+
+@end
+
+@implementation RootViewController
+
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+{
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    if (self) {
+        // Custom initialization
+    }
+    return self;
+}
+-(void)clickBackBut
+{
+    [timer invalidate];
+    [self.navigationController popViewControllerAnimated:YES];
+}
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    
+    MOTopView *topView = [[MOTopView alloc] initWithFrame:CGRectMake(0, 0, self.view.bounds.size.width, IOS6?44:64)];
+    topView.backBtn.hidden = NO;
+    [topView.backBtn addTarget:self action:@selector(clickBackBut) forControlEvents:UIControlEventTouchUpInside];
+    topView.titleLabel.text = @"扫一扫";
+    [self.view addSubview:topView];
+    
+    self.view.backgroundColor = [UIColor grayColor];
+    
+    UIImageView * imageView = [[UIImageView alloc] initWithFrame:CGRectMake(10, 100, 300, 300)];
+    imageView.image = [UIImage imageNamed:@"pick_bg"];
+    [self.view addSubview:imageView];
+    
+    upOrdown = NO;
+    num =0;
+    _line = [[UIImageView alloc] initWithFrame:CGRectMake(50, 110, 220, 2)];
+    _line.image = [UIImage imageNamed:@"line.png"];
+    [self.view addSubview:_line];
+    
+    timer = [NSTimer scheduledTimerWithTimeInterval:.02 target:self selector:@selector(animation1) userInfo:nil repeats:YES];
+
+}
+-(void)animation1
+{
+    if (upOrdown == NO) {
+        num ++;
+        _line.frame = CGRectMake(50, 110+2*num, 220, 2);
+        if (2*num == 280) {
+            upOrdown = YES;
+        }
+    }
+    else {
+        num --;
+        _line.frame = CGRectMake(50, 110+2*num, 220, 2);
+        if (num == 0) {
+            upOrdown = NO;
+        }
+    }
+
+}
+-(void)viewWillAppear:(BOOL)animated
+{
+    [self setupCamera];
+}
+- (void)setupCamera
+{
+    // Device
+    _device = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
+    
+    // Input
+    _input = [AVCaptureDeviceInput deviceInputWithDevice:self.device error:nil];
+    
+    // Output
+    _output = [[AVCaptureMetadataOutput alloc]init];
+    [_output setMetadataObjectsDelegate:self queue:dispatch_get_main_queue()];
+    
+    // Session
+    _session = [[AVCaptureSession alloc]init];
+    [_session setSessionPreset:AVCaptureSessionPresetHigh];
+    if ([_session canAddInput:self.input])
+    {
+        [_session addInput:self.input];
+    }
+    
+    if ([_session canAddOutput:self.output])
+    {
+        [_session addOutput:self.output];
+    }
+    
+    // 条码类型 AVMetadataObjectTypeQRCode
+    _output.metadataObjectTypes =@[AVMetadataObjectTypeQRCode];
+    
+    // Preview
+    _preview = [AVCaptureVideoPreviewLayer layerWithSession:self.session];
+    _preview.videoGravity = AVLayerVideoGravityResizeAspectFill;
+    _preview.frame =CGRectMake(20,110,280,280);
+    _preview.cornerRadius = 12;
+    [self.view.layer insertSublayer:self.preview atIndex:0];
+    // Start
+    [_session startRunning];
+}
+#pragma mark AVCaptureMetadataOutputObjectsDelegate
+- (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputMetadataObjects:(NSArray *)metadataObjects fromConnection:(AVCaptureConnection *)connection
+{
+    NSString *stringValue;
+    if ([metadataObjects count] >0)
+    {
+        AVMetadataMachineReadableCodeObject * metadataObject = [metadataObjects objectAtIndex:0];
+        stringValue = metadataObject.stringValue;
+    }
+    
+    [_session stopRunning];
+//   [self dismissViewControllerAnimated:YES completion:^
+//    {
+//        NSLog(@"stringValue = %@",stringValue);
+//    }];
+    
+    [timer invalidate];
+    
+    NSLog(@"stringValue = %@",stringValue);
+    if ([stringValue hasPrefix:@"crilogin"]) {
+        // crilogin://rnd=1445335088576&url=http://10.3.2.4:8080/criportal/index.jsp
+        
+        NSArray *strArray = [stringValue componentsSeparatedByString:@"="];
+        NSString *secondUrl = strArray[1];
+        secondUrl = [secondUrl substringToIndex:secondUrl.length - 4];
+        _lastUrl = [NSString stringWithFormat:@"http://10.3.2.4:8080/login/set.jsp?rnd=%@&st=",secondUrl];
+        NSLog(@"_lastUrl = %@",_lastUrl);
+        NSLog(@"tgt_key = %@",[[NSUserDefaults standardUserDefaults] valueForKey:TGT_KEY] );
+        //获取st
+        CCGetST *st = [[CCGetST alloc] init];
+        st.delegate = self;
+        [st getSt:[NSString stringWithFormat:@"%@/%@",GETTGT,[[NSUserDefaults standardUserDefaults] valueForKey:TGT_KEY]] andUrl:[strArray lastObject]];
+        
+    }else if ([stringValue hasPrefix:@"http"]){
+        MySaoDetailVC *saoVC = [[MySaoDetailVC alloc] init];
+        saoVC.urlStr = stringValue;
+        [self.navigationController pushViewController:saoVC animated:YES];
+
+    }else if ([stringValue hasPrefix:@"cri"]){
+        MySaoDetailVC *saoVC = [[MySaoDetailVC alloc] init];
+        [stringValue stringByReplacingOccurrencesOfString:@"cri" withString:@"http"];
+        [self.navigationController pushViewController:saoVC animated:YES];
+    }
+}
+
+- (void)didReceiveMemoryWarning
+{
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+#pragma mark 
+- (void)returnSt:(BOOL)bRet andSt:(NSString *)strSt
+{
+    NSLog(@"bRet = %d",bRet);
+    if (!bRet) {
+        return;
+    }
+    [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
+    //获取strStr
+    MySaoDetailVC *saoVC = [[MySaoDetailVC alloc] init];
+    _lastUrl = [_lastUrl stringByAppendingString:strSt];
+    saoVC.urlStr = _lastUrl;
+    NSLog(@"_lastUrl = %@",_lastUrl);
+    [self.navigationController pushViewController:saoVC animated:YES];
+}
+@end

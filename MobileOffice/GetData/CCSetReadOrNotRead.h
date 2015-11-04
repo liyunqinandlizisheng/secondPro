@@ -1,0 +1,26 @@
+//
+//  CCSetReadOrNotRead.h
+//  MobileOffice
+//
+//  Created by Wenrui on 15/10/21.
+//  Copyright (c) 2015年 Wenrui. All rights reserved.
+//
+
+#import <Foundation/Foundation.h>
+
+@protocol CCSetReadOrNotReadDelegate <NSObject>
+
+- (void)returnAppClass:(BOOL)bRet;
+
+@end
+
+@interface CCSetReadOrNotRead : NSObject
+
+@property (nonatomic, retain) NSMutableData                             *m_NetData;
+@property (nonatomic, retain) NSURLConnection                           *m_UrlConnection;
+@property (nonatomic, retain) id <CCSetReadOrNotReadDelegate>           delegate;
+@property (nonatomic, retain) NSMutableArray                            *m_ArrAppList;
+
+- (void)setIsReadStatus:(NSString *)apiUrl andPK:(NSString *)strPK;
+
+@end

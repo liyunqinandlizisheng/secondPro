@@ -1,0 +1,118 @@
+//
+//  SetIpView.m
+//  MobileOffice
+//
+//  Created by liyunqin on 15/10/21.
+//  Copyright (c) 2015年 Wenrui. All rights reserved.
+//
+
+#import "SetIpView.h"
+#import "UIColor+ColorHexString.h"
+#import "ToastView.h"
+
+@implementation SetIpView
+
+-(id)initWithFrame:(CGRect)frame
+{
+    self = [super initWithFrame:frame];
+    if (self) {
+        self.backgroundColor = [UIColor colorWithRed:0 green:0 blue:0 alpha:0.6];
+        
+        UIImageView *blueView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, frame.size.width - 40, 250)];
+        blueView.center = CGPointMake(frame.size.width/2, frame.size.height /2);
+        blueView.backgroundColor = [UIColor colorWithHexString:@"092c75"];
+        blueView.alpha = 0.9;
+        blueView.layer.cornerRadius = 12;
+        blueView.image = [UIImage imageNamed:@""];
+        [self addSubview:blueView];
+        blueView.userInteractionEnabled = YES;
+        
+        UIButton *deleteButton = [[UIButton alloc] initWithFrame:CGRectMake(blueView.frame.origin.x + blueView.frame.size.width - 40, blueView.frame.origin.y - 20, 42, 42)];
+        [deleteButton setImage:[UIImage imageNamed:@"close_button_nor"] forState:UIControlStateNormal];
+        [deleteButton addTarget:self action:@selector(clickDeleteButton:) forControlEvents:UIControlEventTouchUpInside];
+        [self addSubview:deleteButton];
+        
+        UILabel *ipLabel = [[UILabel alloc] initWithFrame:CGRectMake(blueView.frame.size.width / 2 - 50, 15, 100, 20)];
+        ipLabel.textColor = [UIColor whiteColor];
+        ipLabel.textAlignment = NSTextAlignmentCenter;
+        ipLabel.font = [UIFont systemFontOfSize:18];
+        ipLabel.text = @"IP设置";
+        [blueView addSubview:ipLabel];
+        
+        UIImageView *bgImageView = [[UIImageView alloc] initWithFrame:CGRectMake(10, ipLabel.frame.origin.y + ipLabel.frame.size.height + 20, blueView.frame.size.width - 20, 104)];
+        bgImageView.backgroundColor = [UIColor colorWithHexString:@"f6f6f6"];
+        bgImageView.image = [UIImage imageNamed:@""];
+        [blueView addSubview:bgImageView];
+        bgImageView.userInteractionEnabled = YES;
+        
+        UIImageView *userImageView = [[UIImageView alloc] initWithFrame:CGRectMake(10, 5, 42, 42)];
+        userImageView.image = [UIImage imageNamed:@"ip_port_fill"];
+        [bgImageView addSubview:userImageView];
+        
+        userTextFeild = [[UITextField alloc] initWithFrame:CGRectMake(userImageView.frame.origin.x + userImageView.frame.size.width + 5, userImageView.frame.origin.y + 5, 140, 42)];
+        userTextFeild.backgroundColor = [UIColor whiteColor];
+        userTextFeild.borderStyle = UITextBorderStyleNone;
+        userTextFeild.placeholder = @"请输入服务器";
+        userTextFeild.font = [UIFont systemFontOfSize: 14];
+        userTextFeild.textColor = [UIColor blackColor];
+        [bgImageView addSubview:userTextFeild];
+        
+        UILabel *fuwuqiLabel = [[UILabel alloc] initWithFrame:CGRectMake(userTextFeild.frame.origin.x + userTextFeild.frame.size.width, userImageView.frame.origin.y + 5, 60, 42)];
+        fuwuqiLabel.textColor = [UIColor colorWithHexString:@"8a9096"];
+        fuwuqiLabel.textAlignment = NSTextAlignmentLeft;
+        fuwuqiLabel.font = [UIFont systemFontOfSize:14];
+        fuwuqiLabel.text = @" 服务器";
+        [bgImageView addSubview:fuwuqiLabel];
+        
+        UIImageView *passwordImageView = [[UIImageView alloc] initWithFrame:CGRectMake(10, userTextFeild.frame.origin.y + userTextFeild.frame.size.height + 5, 42, 42)];
+        passwordImageView.image = [UIImage imageNamed:@"ip_port_fill"];
+        [bgImageView addSubview:passwordImageView];
+        
+        casTextFeild = [[UITextField alloc] initWithFrame:CGRectMake(userTextFeild.frame.origin.x , userTextFeild.frame.origin.y + userTextFeild.frame.size.height, 140, 42)];
+        casTextFeild.backgroundColor = [UIColor whiteColor];
+        casTextFeild.font = [UIFont systemFontOfSize: 14];
+        casTextFeild.borderStyle = UITextBorderStyleNone;
+        casTextFeild.placeholder = @"请输入cas地址";
+        casTextFeild.textColor = [UIColor blackColor];
+        [bgImageView addSubview:casTextFeild];
+        
+        UILabel *casLabel = [[UILabel alloc] initWithFrame:CGRectMake(casTextFeild.frame.origin.x + casTextFeild.frame.size.width, passwordImageView.frame.origin.y + 5, 80, 42)];
+        casLabel.textColor = [UIColor colorWithHexString:@"8a9096"];
+        casLabel.textAlignment = NSTextAlignmentLeft;
+        casLabel.font = [UIFont systemFontOfSize:14];
+        casLabel.text = @" cas地址";
+        [bgImageView addSubview:casLabel];
+        
+        UIImageView *lineImageView = [[UIImageView alloc] initWithFrame:CGRectMake(10, userImageView.frame.size.height + userImageView.frame.origin.y + 5, bgImageView.frame.size.width - 20, 0.5)];
+        lineImageView.backgroundColor = [UIColor lightGrayColor];
+        [bgImageView addSubview:lineImageView];
+        
+        UIButton *logButton = [[UIButton alloc] initWithFrame:CGRectMake(bgImageView.frame.origin.x, bgImageView.frame.origin.y + bgImageView.frame.size.height + 20, blueView.frame.size.width - bgImageView.frame.origin.x*2, 40)];
+        logButton.layer.cornerRadius = 10;
+        logButton.backgroundColor = [UIColor colorWithHexString:@"0e3ca2"];
+        [logButton setTitle:@"确定" forState:UIControlStateNormal];
+        [logButton addTarget:self action:@selector(clickLogButton:) forControlEvents:UIControlEventTouchUpInside];
+        [blueView addSubview:logButton];
+        
+    }
+    return self;
+}
+-(void)clickLogButton:(UIButton *)butt
+{
+    NSLog(@"点击ip确定按钮");
+    NSLog(@"服务器地址＝%@,cas地址=%@",userTextFeild.text,casTextFeild.text);
+    
+    if (userTextFeild.text.length == 0) {
+        
+    }else if (casTextFeild.text.length == 0){
+        
+    }
+    
+    //need to save the IP and port
+    [[ToastView sharedInstance] showToast:@"IP和端口保存成功"];
+}
+-(void)clickDeleteButton:(UIButton *)butt
+{
+    [self removeFromSuperview];
+}
+@end

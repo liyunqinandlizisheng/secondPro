@@ -1,0 +1,79 @@
+//
+//  LoginVC.m
+//  MobileOffice
+//
+//  Created by liyunqin on 15/10/21.
+//  Copyright (c) 2015年 Wenrui. All rights reserved.
+//
+
+#import "LoginVC.h"
+#import "MOButton.h"
+
+@interface LoginVC ()
+
+@end
+
+@implementation LoginVC
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view.
+    
+    self.view.backgroundColor = [UIColor whiteColor];
+    
+    MOButton *ipoButton = [[MOButton alloc] initWithFrame:CGRectMake(self.view.bounds.size.width - 60, 30, 68, 50)];
+    [ipoButton.topImageView setImage:[UIImage imageNamed:@"config_ip_press.png"]];
+    ipoButton.nameLabel.text = @"ip设置";
+    [ipoButton addTarget:self action:@selector(clickIpoButt:) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:ipoButton];
+    
+    UIImageView *logImageView = [[UIImageView alloc] initWithFrame:CGRectMake((self.view.bounds.size.width - 96.5)/2, 100, 96.5, 37.5)];
+    logImageView.image = [UIImage imageNamed:@"login_logo"];
+    [self.view addSubview:logImageView];
+    
+    //登陆
+    
+    UIImageView *bgImageView = [[UIImageView alloc] initWithFrame:CGRectMake(10, logImageView.frame.origin.y + logImageView.frame.size.height + 40, self.view.bounds.size.width - 20, 120)];
+    bgImageView.backgroundColor = [UIColor lightGrayColor];
+    bgImageView.image = [UIImage imageNamed:@""];
+    [self.view addSubview:bgImageView];
+    
+    UIImageView *userImageView = [[UIImageView alloc] initWithFrame:CGRectMake(10, bgImageView.frame.origin.y, 42, 42)];
+    
+    
+    
+    UILabel *boomttonLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, self.view.bounds.size.height - 50, self.view.bounds.size.width, 20)];
+    boomttonLabel.textAlignment = NSTextAlignmentCenter;
+    boomttonLabel.textColor = [UIColor blackColor];
+    boomttonLabel.font = [UIFont systemFontOfSize:12];
+    boomttonLabel.text = @"Copyright @ 2014-2015 Inc.All rights reserved";
+    [self.view addSubview:boomttonLabel];
+
+    UILabel *lastLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, boomttonLabel.frame.origin.y + boomttonLabel.frame.size.height , self.view.bounds.size.width, 20)];
+    lastLabel.textAlignment = NSTextAlignmentCenter;
+    lastLabel.textColor = [UIColor blackColor];
+    lastLabel.font = [UIFont systemFontOfSize:12];
+    lastLabel.text = @"中视广信公司 版权所有";
+    [self.view addSubview:lastLabel];
+}
+-(void)clickIpoButt:(UIButton *)button
+{
+   NSLog(@"clickpoButton");
+    
+}
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+/*
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+
+@end

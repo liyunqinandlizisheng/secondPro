@@ -1,0 +1,70 @@
+//
+//  MessageDetailViewController.m
+//  MobileOffice
+//
+//  Created by Wenrui on 15/10/20.
+//  Copyright (c) 2015年 Wenrui. All rights reserved.
+//
+
+#import "MessageDetailViewController.h"
+#import "MOTopView.h"
+#import "Const.h"
+#import "UIColor+ColorHexString.h"
+#import "WebViewController.h"
+
+@interface MessageDetailViewController ()
+
+@end
+
+@implementation MessageDetailViewController
+- (void)viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:animated];
+}
+-(void)clickBackBut
+{
+    [self.navigationController popViewControllerAnimated:YES];
+}
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    
+    self.view.backgroundColor = [UIColor colorWithHexString:@"eeeeee"];
+    MOTopView *topView = [[MOTopView alloc] initWithFrame:CGRectMake(0, 0, self.view.bounds.size.width, IOS6?44:64)];
+    topView.titleLabel.text = @"消息详情";
+    topView.backBtn.hidden = NO;
+    [topView.backBtn addTarget:self action:@selector(clickBackBut) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:topView];
+    
+    UIView *bgView = [[UIView alloc] initWithFrame:CGRectMake(10, topView.frame.origin.y + topView.frame.size.height + 10, self.view.bounds.size.width - 20 , self.view.bounds.size.height - topView.frame.origin.y - topView.frame.size.height - 20 - ViewBarHeight)];
+    bgView.backgroundColor = [UIColor whiteColor];
+    bgView.layer.cornerRadius = 10;
+    [self.view addSubview:bgView];
+    
+    
+    UIView *line = [[UIView alloc] initWithFrame:CGRectMake(5, bgView.frame.size.height - 50, bgView.frame.size.width - 10, 1)];
+    line.backgroundColor = [UIColor colorWithHexString:@"b9b9b9"];
+    [bgView addSubview:line];
+    
+    
+    UIButton *detailButton = [[UIButton alloc] initWithFrame:CGRectMake(5, line.frame.origin.y + line.frame.size.height, 100, 40)];
+    [detailButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+    detailButton.titleLabel.font = [UIFont boldSystemFontOfSize:18];
+    [detailButton setTitle:@"查看详情..." forState:UIControlStateNormal];
+    [detailButton addTarget:self action:@selector(clickDetailButton:) forControlEvents:UIControlEventTouchUpInside];
+    [bgView addSubview:detailButton];
+    
+}
+-(void)clickDetailButton:(UIButton *)button
+{
+    NSLog(@"click detail button");
+    
+    WebViewController *webVC = [[WebViewController alloc] initWithUrl:@"http://www.baidu.com"];
+    [self.navigationController pushViewController:webVC animated:YES];
+    
+}
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+@end

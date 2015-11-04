@@ -1,0 +1,906 @@
+//
+//  Library.m
+//  CCTV
+//
+//  Created by wang shuo on 12-6-1.
+//  Copyright (c) 2012年 __MyCompanyName__. All rights reserved.
+//
+
+#import "Library.h"
+#import "CCHomeListData.h"
+#import "Const.h"
+#import "CCMessageData.h"
+
+@interface Library (Private)
+
+- (BOOL)openDatabase;
+- (void)closeDatabase;
+- (void)createDatabaseIfNeeded;
+- (NSString *)databasePath;
+
+@end
+
+@implementation Library
+
+- (id)init
+{
+    if (self = [super init])
+    {
+        [self createDatabaseIfNeeded];
+    }
+    
+    return self;
+}
+
+
+
+#pragma mark -
+#pragma mark Class Private function
+- (NSString *)databasePath 
+{
+	NSArray *pathArray = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+	NSString *documentDir = [pathArray objectAtIndex:0];
+    NSString *databasePath = nil;
+	databasePath = [documentDir stringByAppendingPathComponent:DATABASE_NAME];
+	NSLog(@"%@",databasePath);
+	return databasePath;
+}
+
+
+- (void)createDatabaseIfNeeded 
+{
+	NSString *databasePath = [self databasePath];
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    
+    if ([fileManager fileExistsAtPath:databasePath])
+    {
+        return;
+    }
+	
+	const char *sql = NULL;
+	const char *tableName = NULL;
+	char *errMsg = NULL;
+	
+	if(sqlite3_open([databasePath UTF8String], &m_Database) != SQLITE_OK) 
+	{
+		sqlite3_close(m_Database);
+		NSAssert1(0, @"Failed to open database with message '%s'.", sqlite3_errmsg(m_Database));	
+		
+		return;
+	}
+    
+    sql = CREATE_VIDEOCOLLECT_TABLE;
+    errMsg = NULL;
+    if (sqlite3_exec(m_Database, sql, NULL, NULL, &errMsg) != SQLITE_OK) 
+    {
+        tableName = "collectTable";
+    }
+    
+    sql = CREATE_MESSAGELIST_TABLE;
+    errMsg = NULL;
+    if (sqlite3_exec(m_Database, sql, NULL, NULL, &errMsg) != SQLITE_OK)
+    {
+        tableName = "messageTable";
+    }
+    
+    sqlite3_close(m_Database);
+	
+	if (tableName != NULL) 
+	{
+		NSAssert2(0, @"Failed to create table '%s' with message '%s'.", tableName, errMsg);
+	}
+}
+
+
+- (BOOL)openDatabase
+{
+    if(sqlite3_open([[self databasePath] UTF8String], &m_Database) != SQLITE_OK) 
+	{
+		return NO;
+	}
+	return YES;
+}
+
+
+- (void)closeDatabase
+{
+    sqlite3_close(m_Database);
+	m_Database = NULL;
+}
+
+
+#pragma mark -
+#pragma mark Collect
+- (BOOL)getSaveList:(NSMutableArray **)saveList
+{
+    if (nil == saveList || nil == *saveList)
+    {
+        return NO;
+    }
+    
+    BOOL bRet = YES;
+    [*saveList removeAllObjects];
+    
+    do
+    {
+        bRet = [self openDatabase];
+        if (!bRet)
+        {
+            break;
+        }
+        
+        sqlite3_stmt *statement = NULL;
+        const char *sql = "SELECT pkID, appName, appCode, company, comPerson, comTel, icon, appKind, appClassCode, appSort, urlGetnum, messagePushFlag, flag, defaultApp, appPackage, appActivity, appEntry, appUrl FROM collectTable";
+        
+        if (sqlite3_prepare_v2(m_Database, sql, -1, &statement, NULL) != SQLITE_OK)
+        {
+            bRet = NO;
+            break;
+        }
+        
+        while (sqlite3_step(statement) == SQLITE_ROW)
+        {
+            const char *szPKID = (const char *)sqlite3_column_text(statement, 0);
+            const char *szAppName = (const char *)sqlite3_column_text(statement, 1);
+            const char *szAppCode = (const char *)sqlite3_column_text(statement, 2);
+            const char *szCompany = (const char *)sqlite3_column_text(statement, 3);
+            const char *szComPerson = (const char *)sqlite3_column_text(statement, 4);
+            const char *szComTel = (const char *)sqlite3_column_text(statement, 5);
+            const char *szIcon = (const char *)sqlite3_column_text(statement, 6);
+            const char *szAppKind = (const char *)sqlite3_column_text(statement, 7);
+            const char *szAppClassCode = (const char *)sqlite3_column_text(statement, 8);
+            const char *szAppSort = (const char *)sqlite3_column_text(statement, 9);
+            const char *szUrlGetnum = (const char *)sqlite3_column_text(statement, 10);
+            const char *szMessagePushFlag = (const char *)sqlite3_column_text(statement, 11);
+            const char *szFlag = (const char *)sqlite3_column_text(statement, 12);
+            const char *szDefaultApp = (const char *)sqlite3_column_text(statement, 13);
+            const char *szAppPackage = (const char *)sqlite3_column_text(statement, 14);
+            const char *szAppActivity = (const char *)sqlite3_column_text(statement, 15);
+            const char *szAppEntry = (const char *)sqlite3_column_text(statement, 16);
+            const char *szAppUrl = (const char *)sqlite3_column_text(statement, 17);
+            
+            NSString *strPKID = nil;
+            if (szPKID)
+            {
+                strPKID = [[NSString alloc] initWithUTF8String:szPKID];
+            }
+            
+            NSString *strAppName = nil;
+            if (szAppName)
+            {
+                strAppName = [[NSString alloc] initWithUTF8String:szAppName];
+            }
+            
+            NSString *strAppCode = nil;
+            if (szAppCode)
+            {
+                strAppCode = [[NSString alloc] initWithUTF8String:szAppCode];
+            }
+            
+            NSString *strCompany = nil;
+            if (szCompany)
+            {
+                strCompany = [[NSString alloc] initWithUTF8String:szCompany];
+            }
+            
+            NSString *strComPerson = nil;
+            if (szComPerson)
+            {
+                strComPerson = [[NSString alloc] initWithUTF8String:szComPerson];
+            }
+            
+            NSString *strComTel = nil;
+            if (szComTel)
+            {
+                strComTel = [[NSString alloc] initWithUTF8String:szComTel];
+            }
+            
+            NSString *strIcon = nil;
+            if (szIcon)
+            {
+                strIcon = [[NSString alloc] initWithUTF8String:szIcon];
+            }
+            
+            NSString *strAppKind = nil;
+            if (szAppKind)
+            {
+                strAppKind = [[NSString alloc] initWithUTF8String:szAppKind];
+            }
+            
+            NSString *strAppClassCode = nil;
+            if (szAppClassCode)
+            {
+                strAppClassCode = [[NSString alloc] initWithUTF8String:szAppClassCode];
+            }
+            
+            NSString *strAppSort = nil;
+            if (szAppSort)
+            {
+                strAppSort = [[NSString alloc] initWithUTF8String:szAppSort];
+            }
+            
+            NSString *strUrlGetnum = nil;
+            if (szUrlGetnum)
+            {
+                strUrlGetnum = [[NSString alloc] initWithUTF8String:szUrlGetnum];
+            }
+            
+            NSString *strMessagePushFlag = nil;
+            if (szMessagePushFlag)
+            {
+                strMessagePushFlag = [[NSString alloc] initWithUTF8String:szMessagePushFlag];
+            }
+            
+            NSString *strFlag = nil;
+            if (szFlag)
+            {
+                strFlag = [[NSString alloc] initWithUTF8String:szFlag];
+            }
+            
+            NSString *strDefaultApp = nil;
+            if (szDefaultApp)
+            {
+                strDefaultApp = [[NSString alloc] initWithUTF8String:szDefaultApp];
+            }
+            
+            NSString *strAppPackage = nil;
+            if (szAppPackage)
+            {
+                strAppPackage = [[NSString alloc] initWithUTF8String:szAppPackage];
+            }
+            
+            NSString *strAppActivity = nil;
+            if (szAppActivity)
+            {
+                strAppActivity = [[NSString alloc] initWithUTF8String:szAppActivity];
+            }
+            
+            NSString *strAppEntry = nil;
+            if (szAppEntry)
+            {
+                strAppEntry = [[NSString alloc] initWithUTF8String:szAppEntry];
+            }
+            
+            NSString *strAppUrl = nil;
+            if (szAppUrl)
+            {
+                strAppUrl = [[NSString alloc] initWithUTF8String:szAppUrl];
+            }
+            
+            CCHomeListData *homeListData = [[CCHomeListData alloc] init];
+            
+            homeListData.m_StrPK = strPKID;
+            homeListData.m_StrAppName = strAppName;
+            homeListData.m_StrAppCode = strAppCode;
+            homeListData.m_StrCompany = strCompany;
+            homeListData.m_StrComPerson = strComPerson;
+            homeListData.m_StrComTel = strComTel;
+            homeListData.m_StrIcon = strIcon;
+            homeListData.m_StrAppKind = strAppKind;
+            homeListData.m_StrAppClassCode = strAppClassCode;
+            homeListData.m_StrAppSort = strAppSort;
+            homeListData.m_StrUrlGetnum = strUrlGetnum;
+            homeListData.m_StrMessagePushFlag = strMessagePushFlag;
+            homeListData.m_StrFlag = strFlag;
+            homeListData.m_StrDefaultApp = strDefaultApp;
+            homeListData.m_StrAppPackage = strAppPackage;
+            homeListData.m_StrAppActivity = strAppActivity;
+            homeListData.m_StrAppEntry = strAppEntry;
+            homeListData.m_StrAppUrl = strAppUrl;
+            
+            [*saveList addObject:homeListData];
+        }
+        
+        sqlite3_finalize(statement);
+    } while (NO);
+    
+    [self closeDatabase];
+    return bRet;
+}
+
+
+- (BOOL)save:(CCHomeListData *)homeListData
+{
+    if (!homeListData)
+    {
+        return NO;
+    }
+    
+    BOOL bRet = YES;
+    
+    do
+    {
+        bRet = [self openDatabase];
+        if (!bRet) {
+            break;
+        }
+        
+        sqlite3_stmt *statement = NULL;
+        const char *sql = "INSERT INTO collectTable (pkID, appName, appCode, company, comPerson, comTel, icon, appKind, appClassCode, appSort, urlGetnum, messagePushFlag, flag, defaultApp, appPackage, appActivity, appEntry, appUrl) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        if (sqlite3_prepare_v2(m_Database, sql, -1, &statement, NULL) != SQLITE_OK)
+        {
+            bRet = NO;
+            break;
+        }
+        
+        if ([homeListData.m_StrPK isEqual:[NSNull null]])
+        {
+            homeListData.m_StrPK = @"wu";
+        }
+        sqlite3_bind_text(statement, 1, [homeListData.m_StrPK UTF8String], -1, SQLITE_TRANSIENT);
+        
+        if ([homeListData.m_StrAppName isEqual:[NSNull null]])
+        {
+            homeListData.m_StrAppName = @"wu";
+        }
+        sqlite3_bind_text(statement, 2, [homeListData.m_StrAppName UTF8String], -1, SQLITE_TRANSIENT);
+        
+        if ([homeListData.m_StrAppCode isEqual:[NSNull null]])
+        {
+            homeListData.m_StrAppCode = @"wu";
+        }
+        sqlite3_bind_text(statement, 3, [homeListData.m_StrAppCode UTF8String], -1, SQLITE_TRANSIENT);
+        
+        if ([homeListData.m_StrCompany isEqual:[NSNull null]])
+        {
+            homeListData.m_StrCompany = @"wu";
+        }
+        sqlite3_bind_text(statement, 4, [homeListData.m_StrCompany UTF8String], -2, SQLITE_TRANSIENT);
+        
+        if ([homeListData.m_StrComPerson isEqual:[NSNull null]])
+        {
+            homeListData.m_StrComPerson = @"wu";
+        }
+        sqlite3_bind_text(statement, 5, [homeListData.m_StrComPerson UTF8String], -3, SQLITE_TRANSIENT);
+        
+        if ([homeListData.m_StrComTel isEqual:[NSNull null]])
+        {
+            homeListData.m_StrComTel = @"wu";
+        }
+        sqlite3_bind_text(statement, 6, [homeListData.m_StrComTel UTF8String], -3, SQLITE_TRANSIENT);
+        
+        if ([homeListData.m_StrIcon isEqual:[NSNull null]])
+        {
+            homeListData.m_StrIcon = @"wu";
+        }
+        sqlite3_bind_text(statement, 7, [homeListData.m_StrIcon UTF8String], -3, SQLITE_TRANSIENT);
+        
+        if ([homeListData.m_StrAppKind isEqual:[NSNull null]])
+        {
+            homeListData.m_StrAppKind = @"wu";
+        }
+        sqlite3_bind_text(statement, 8, [homeListData.m_StrAppKind UTF8String], -3, SQLITE_TRANSIENT);
+        
+        if ([homeListData.m_StrAppClassCode isEqual:[NSNull null]])
+        {
+            homeListData.m_StrAppCode = @"wu";
+        }
+        sqlite3_bind_text(statement, 9, [homeListData.m_StrAppClassCode UTF8String], -3, SQLITE_TRANSIENT);
+        
+//        NSLog(@"homeListData.m_StrAppSort = %@", homeListData.m_StrAppSort);
+        if ([homeListData.m_StrAppSort isEqual:[NSNull null]])
+        {
+            homeListData.m_StrAppSort = @"wu";
+        }
+        sqlite3_bind_text(statement, 10, [homeListData.m_StrAppSort UTF8String], -3, SQLITE_TRANSIENT);
+        
+        if ([homeListData.m_StrUrlGetnum isEqual:[NSNull null]])
+        {
+            homeListData.m_StrUrlGetnum = @"无";
+        }
+        sqlite3_bind_text(statement, 11, [homeListData.m_StrUrlGetnum UTF8String], -3, SQLITE_TRANSIENT);
+        
+        if ([homeListData.m_StrMessagePushFlag isEqual:[NSNull null]])
+        {
+            homeListData.m_StrMessagePushFlag = @"wu";
+        }
+        sqlite3_bind_text(statement, 12, [homeListData.m_StrMessagePushFlag UTF8String], -3, SQLITE_TRANSIENT);
+        
+        if ([homeListData.m_StrFlag isEqual:[NSNull null]])
+        {
+            homeListData.m_StrFlag = @"wu";
+        }
+        sqlite3_bind_text(statement, 13, [homeListData.m_StrFlag UTF8String], -3, SQLITE_TRANSIENT);
+        
+        if ([homeListData.m_StrDefaultApp isEqual:[NSNull null]])
+        {
+            homeListData.m_StrDefaultApp = @"无";
+        }
+        sqlite3_bind_text(statement, 14, [homeListData.m_StrDefaultApp UTF8String], -3, SQLITE_TRANSIENT);
+        
+        if ([homeListData.m_StrAppPackage isEqual:[NSNull null]])
+        {
+            homeListData.m_StrAppPackage = @"wu";
+        }
+        sqlite3_bind_text(statement, 15, [homeListData.m_StrAppPackage UTF8String], -3, SQLITE_TRANSIENT);
+        
+        if ([homeListData.m_StrAppActivity isEqual:[NSNull null]])
+        {
+            homeListData.m_StrAppActivity = @"wu";
+        }
+        sqlite3_bind_text(statement, 16, [homeListData.m_StrAppActivity UTF8String], -3, SQLITE_TRANSIENT);
+        
+        if ([homeListData.m_StrAppEntry isEqual:[NSNull null]])
+        {
+            homeListData.m_StrAppEntry = @"wu";
+        }
+        sqlite3_bind_text(statement, 17, [homeListData.m_StrAppEntry UTF8String], -3, SQLITE_TRANSIENT);
+        
+        if ([homeListData.m_StrAppUrl isEqual:[NSNull null]])
+        {
+            homeListData.m_StrAppUrl = @"wu";
+        }
+        sqlite3_bind_text(statement, 18, [homeListData.m_StrAppUrl UTF8String], -3, SQLITE_TRANSIENT);
+        
+        if (sqlite3_step(statement) != SQLITE_DONE)
+        {
+            bRet = NO;
+        }
+        sqlite3_finalize(statement);
+    } while (NO);
+    
+    [self closeDatabase];
+    return bRet;
+}
+
+
+- (BOOL)removeSaveInfo:(NSString *)pid
+{
+    BOOL bRet = YES;
+    
+    do 
+    {
+        bRet = [self openDatabase];
+        if (!bRet) {
+            break;
+        }
+        
+        sqlite3_stmt *statement = NULL;
+        const char *sql = "DELETE FROM collectTable WHERE pkID = ?";
+        if (sqlite3_prepare_v2(m_Database, sql, -1, &statement, NULL) != SQLITE_OK) 
+        {
+            bRet = NO;
+            break;
+        }
+        
+        sqlite3_bind_text(statement, 1, [pid UTF8String], -1, SQLITE_TRANSIENT);
+        
+        if (sqlite3_step(statement) != SQLITE_DONE) 
+        {
+            bRet = NO;
+        }
+        sqlite3_finalize(statement);
+    } while (NO);
+    
+    [self closeDatabase];
+    return bRet;
+}
+
+
+- (BOOL)removeAllCollectInfo
+{
+    BOOL bRet = YES;
+	
+	do {
+		bRet = [self openDatabase];
+		if(!bRet) {
+			break;
+		}
+		
+		sqlite3_stmt *statement = NULL;
+		const char *sql = "DELETE FROM collectTable";
+		if(sqlite3_prepare_v2(m_Database, sql, -1, &statement, NULL) != SQLITE_OK) 
+        {
+			bRet = NO;
+			break;
+		}
+		
+		if(sqlite3_step(statement) != SQLITE_DONE)
+        {
+			bRet = NO;
+		}
+		sqlite3_finalize(statement);
+	}while(NO);
+	
+	[self closeDatabase];
+	return bRet;
+}
+
+
+#pragma mark -
+#pragma mark Message
+- (BOOL)saveMessage:(CCMessageData *)messageData
+{
+    if (!messageData)
+    {
+        return NO;
+    }
+    
+    BOOL bRet = YES;
+    
+    do
+    {
+        bRet = [self openDatabase];
+        if (!bRet) {
+            break;
+        }
+        
+        sqlite3_stmt *statement = NULL;
+        const char *sql = "INSERT INTO messageTable (pkID, msgContent, msgHref, msgLevel, msgTitle, readFlag, readTime, receiverDeptCodes, receiverUserCodes, sendPerson, sendTime, systemCode, systemIcon, systemName, usercode) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        
+        if (sqlite3_prepare_v2(m_Database, sql, -1, &statement, NULL) != SQLITE_OK)
+        {
+            bRet = NO;
+            break;
+        }
+        
+        if ([messageData.m_StrPK isEqual:[NSNull null]])
+        {
+            messageData.m_StrPK = @"wu";
+        }
+        sqlite3_bind_text(statement, 1, [messageData.m_StrPK UTF8String], -1, SQLITE_TRANSIENT);
+        
+        if ([messageData.m_StrMsgContent isEqual:[NSNull null]])
+        {
+            messageData.m_StrMsgContent = @"wu";
+        }
+        sqlite3_bind_text(statement, 2, [messageData.m_StrMsgContent UTF8String], -1, SQLITE_TRANSIENT);
+        
+        if ([messageData.m_StrMsgHref isEqual:[NSNull null]])
+        {
+            messageData.m_StrMsgHref = @"wu";
+        }
+        sqlite3_bind_text(statement, 3, [messageData.m_StrMsgHref UTF8String], -1, SQLITE_TRANSIENT);
+        
+        if ([messageData.m_StrMsgLevel isEqual:[NSNull null]])
+        {
+            messageData.m_StrMsgLevel = @"wu";
+        }
+        sqlite3_bind_text(statement, 4, [messageData.m_StrMsgLevel UTF8String], -2, SQLITE_TRANSIENT);
+        
+        if ([messageData.m_StrMsgTitle isEqual:[NSNull null]])
+        {
+            messageData.m_StrMsgTitle = @"wu";
+        }
+        sqlite3_bind_text(statement, 5, [messageData.m_StrMsgTitle UTF8String], -3, SQLITE_TRANSIENT);
+        
+        if ([messageData.m_StrReadFlag isEqual:[NSNull null]])
+        {
+            messageData.m_StrReadFlag = @"wu";
+        }
+        sqlite3_bind_text(statement, 6, [messageData.m_StrReadFlag UTF8String], -3, SQLITE_TRANSIENT);
+        
+        if ([messageData.m_StrReadTime isEqual:[NSNull null]])
+        {
+            messageData.m_StrReadTime = @"wu";
+        }
+        sqlite3_bind_text(statement, 7, [messageData.m_StrReadTime UTF8String], -3, SQLITE_TRANSIENT);
+        
+        if ([messageData.m_StrReceiverDeptCodes isEqual:[NSNull null]])
+        {
+            messageData.m_StrReceiverDeptCodes = @"wu";
+        }
+        sqlite3_bind_text(statement, 8, [messageData.m_StrReceiverDeptCodes UTF8String], -3, SQLITE_TRANSIENT);
+        
+        if ([messageData.m_StrReceiverUserCodes isEqual:[NSNull null]])
+        {
+            messageData.m_StrReceiverUserCodes = @"wu";
+        }
+        sqlite3_bind_text(statement, 9, [messageData.m_StrReceiverUserCodes UTF8String], -3, SQLITE_TRANSIENT);
+        
+
+        if ([messageData.m_StrSendPerson isEqual:[NSNull null]])
+        {
+            messageData.m_StrSendPerson = @"wu";
+        }
+        sqlite3_bind_text(statement, 10, [messageData.m_StrSendPerson UTF8String], -3, SQLITE_TRANSIENT);
+        
+        if ([messageData.m_StrSendTime isEqual:[NSNull null]])
+        {
+            messageData.m_StrSendTime = @"无";
+        }
+        sqlite3_bind_text(statement, 11, [messageData.m_StrSendTime UTF8String], -3, SQLITE_TRANSIENT);
+        
+        if ([messageData.m_StrSystemCode isEqual:[NSNull null]])
+        {
+            messageData.m_StrSystemCode = @"wu";
+        }
+        sqlite3_bind_text(statement, 12, [messageData.m_StrSystemCode UTF8String], -3, SQLITE_TRANSIENT);
+        
+        if ([messageData.m_StrSystemIcon isEqual:[NSNull null]])
+        {
+            messageData.m_StrSystemIcon = @"wu";
+        }
+        sqlite3_bind_text(statement, 13, [messageData.m_StrSystemIcon UTF8String], -3, SQLITE_TRANSIENT);
+        
+        if ([messageData.m_StrSystemName isEqual:[NSNull null]])
+        {
+            messageData.m_StrSystemName = @"无";
+        }
+        sqlite3_bind_text(statement, 14, [messageData.m_StrSystemName UTF8String], -3, SQLITE_TRANSIENT);
+        
+        if ([messageData.m_StrUsercode isEqual:[NSNull null]])
+        {
+            messageData.m_StrUsercode = @"wu";
+        }
+        sqlite3_bind_text(statement, 15, [messageData.m_StrUsercode UTF8String], -3, SQLITE_TRANSIENT);
+        
+        if (sqlite3_step(statement) != SQLITE_DONE)
+        {
+            bRet = NO;
+        }
+        sqlite3_finalize(statement);
+    } while (NO);
+    
+    [self closeDatabase];
+    return bRet;
+}
+
+
+- (BOOL)updateMessage:(CCMessageData *)messageData
+{
+    if(!messageData)
+    {
+        return NO;
+    }
+    
+    BOOL bRet = YES;
+    
+    do
+    {
+        bRet = [self openDatabase];
+        if(!bRet)
+        {
+            break;
+        }
+        
+        sqlite3_stmt *statement = NULL;
+        const char *sql = "UPDATE messageTable SET readFlag = T WHERE pkID = ?";
+        if(sqlite3_prepare_v2(m_Database, sql, -1, &statement, NULL) != SQLITE_OK)
+        {
+            bRet = NO;
+            break;
+        }
+        
+        sqlite3_bind_text(statement, 1, [messageData.m_StrPK UTF8String], -1, SQLITE_TRANSIENT);
+        if(sqlite3_step(statement) != SQLITE_DONE)
+        {
+            bRet = NO;
+        }
+        
+        sqlite3_finalize(statement);
+    }while(NO);
+    
+    [self closeDatabase];
+    return bRet;
+}
+
+
+- (BOOL)getMessageList:(NSMutableArray **)messageList
+{
+    if (nil == messageList || nil == *messageList)
+    {
+        return NO;
+    }
+    
+    BOOL bRet = YES;
+    [*messageList removeAllObjects];
+    
+    do
+    {
+        bRet = [self openDatabase];
+        if (!bRet)
+        {
+            break;
+        }
+        
+        sqlite3_stmt *statement = NULL;
+        const char *sql = "SELECT pkID, msgContent, msgHref, msgLevel, msgTitle, readFlag, readTime, receiverDeptCodes, receiverUserCodes, sendPerson, sendTime, systemCode, systemIcon, systemName, usercode FROM messageTable";
+        
+        if (sqlite3_prepare_v2(m_Database, sql, -1, &statement, NULL) != SQLITE_OK)
+        {
+            bRet = NO;
+            break;
+        }
+        
+        while (sqlite3_step(statement) == SQLITE_ROW)
+        {
+            const char *szPKID = (const char *)sqlite3_column_text(statement, 0);
+            const char *szmsgContent = (const char *)sqlite3_column_text(statement, 1);
+            const char *szmsgHref = (const char *)sqlite3_column_text(statement, 2);
+            const char *szmsgLevel = (const char *)sqlite3_column_text(statement, 3);
+            const char *szmsgTitle = (const char *)sqlite3_column_text(statement, 4);
+            const char *szreadFlag = (const char *)sqlite3_column_text(statement, 5);
+            const char *szreadTime = (const char *)sqlite3_column_text(statement, 6);
+            const char *szreceiverDeptCodes = (const char *)sqlite3_column_text(statement, 7);
+            const char *szreceiverUserCodes = (const char *)sqlite3_column_text(statement, 8);
+            const char *szsendPerson = (const char *)sqlite3_column_text(statement, 9);
+            const char *szsendTime = (const char *)sqlite3_column_text(statement, 10);
+            const char *szsystemCode = (const char *)sqlite3_column_text(statement, 11);
+            const char *szsystemIcon = (const char *)sqlite3_column_text(statement, 12);
+            const char *szsystemName = (const char *)sqlite3_column_text(statement, 13);
+            const char *szusercode = (const char *)sqlite3_column_text(statement, 14);
+            
+            NSString *strPKID = nil;
+            if (szPKID)
+            {
+                strPKID = [[NSString alloc] initWithUTF8String:szPKID];
+            }
+            
+            NSString *strmsgContent = nil;
+            if (szmsgContent)
+            {
+                strmsgContent = [[NSString alloc] initWithUTF8String:szmsgContent];
+            }
+            
+            NSString *strmsgHref = nil;
+            if (szmsgHref)
+            {
+                strmsgHref = [[NSString alloc] initWithUTF8String:szmsgHref];
+            }
+            
+            NSString *strmsgLevel = nil;
+            if (szmsgLevel)
+            {
+                strmsgLevel = [[NSString alloc] initWithUTF8String:szmsgLevel];
+            }
+            
+            NSString *strmsgTitle = nil;
+            if (szmsgTitle)
+            {
+                strmsgTitle = [[NSString alloc] initWithUTF8String:szmsgTitle];
+            }
+            
+            NSString *strreadFlag = nil;
+            if (szreadFlag)
+            {
+                strreadFlag = [[NSString alloc] initWithUTF8String:szreadFlag];
+            }
+            
+            NSString *strreadTime = nil;
+            if (szreadTime)
+            {
+                strreadTime = [[NSString alloc] initWithUTF8String:szreadTime];
+            }
+            
+            NSString *strreceiverDeptCodes = nil;
+            if (szreceiverDeptCodes)
+            {
+                strreceiverDeptCodes = [[NSString alloc] initWithUTF8String:szreceiverDeptCodes];
+            }
+            
+            NSString *strreceiverUserCodes = nil;
+            if (szreceiverUserCodes)
+            {
+                strreceiverUserCodes = [[NSString alloc] initWithUTF8String:szreceiverUserCodes];
+            }
+            
+            NSString *strsendPerson = nil;
+            if (szsendPerson)
+            {
+                strsendPerson = [[NSString alloc] initWithUTF8String:szsendPerson];
+            }
+            
+            NSString *strsendTime = nil;
+            if (szsendTime)
+            {
+                strsendTime = [[NSString alloc] initWithUTF8String:szsendTime];
+            }
+            
+            NSString *strsystemCode = nil;
+            if (szsystemCode)
+            {
+                strsystemCode = [[NSString alloc] initWithUTF8String:szsystemCode];
+            }
+            
+            NSString *strsystemIcon = nil;
+            if (szsystemIcon)
+            {
+                strsystemIcon = [[NSString alloc] initWithUTF8String:szsystemIcon];
+            }
+            
+            NSString *strsystemName = nil;
+            if (szsystemName)
+            {
+                strsystemName = [[NSString alloc] initWithUTF8String:szsystemName];
+            }
+            
+            NSString *strusercode = nil;
+            if (szusercode)
+            {
+                strusercode = [[NSString alloc] initWithUTF8String:szusercode];
+            }
+            
+            CCMessageData *messageData = [[CCMessageData alloc] init];
+            
+            messageData.m_StrPK = strPKID;
+            messageData.m_StrMsgContent = strmsgContent;
+            messageData.m_StrMsgHref = strmsgHref;
+            messageData.m_StrMsgLevel = strmsgLevel;
+            messageData.m_StrMsgTitle = strmsgTitle;
+            messageData.m_StrReadFlag = strreadFlag;
+            messageData.m_StrReadTime = strreadTime;
+            messageData.m_StrReceiverDeptCodes = strreceiverDeptCodes;
+            messageData.m_StrReceiverUserCodes = strreceiverUserCodes;
+            messageData.m_StrSendPerson = strsendPerson;
+            messageData.m_StrSendTime = strsendTime;
+            messageData.m_StrSystemIcon = strsystemIcon;
+            messageData.m_StrSystemName = strsystemName;
+            messageData.m_StrSystemCode = strsystemCode;
+            messageData.m_StrUsercode = strusercode;
+            
+            [*messageList addObject:messageData];
+        }
+        
+        sqlite3_finalize(statement);
+    } while (NO);
+    
+    [self closeDatabase];
+    return bRet;
+}
+
+
+- (BOOL)removeMessageInfo:(NSString *)pkID
+{
+    BOOL bRet = YES;
+    
+    do
+    {
+        bRet = [self openDatabase];
+        if (!bRet) {
+            break;
+        }
+        
+        sqlite3_stmt *statement = NULL;
+        const char *sql = "DELETE FROM messageTable WHERE pkID = ?";
+        if (sqlite3_prepare_v2(m_Database, sql, -1, &statement, NULL) != SQLITE_OK)
+        {
+            bRet = NO;
+            break;
+        }
+        
+        sqlite3_bind_text(statement, 1, [pkID UTF8String], -1, SQLITE_TRANSIENT);
+        
+        if (sqlite3_step(statement) != SQLITE_DONE)
+        {
+            bRet = NO;
+        }
+        sqlite3_finalize(statement);
+    } while (NO);
+    
+    [self closeDatabase];
+    return bRet;
+}
+
+
+- (BOOL)removeAllMessageInfo
+{
+    BOOL bRet = YES;
+    
+    do {
+        bRet = [self openDatabase];
+        if(!bRet) {
+            break;
+        }
+        
+        sqlite3_stmt *statement = NULL;
+        const char *sql = "DELETE FROM messageTable";
+        if(sqlite3_prepare_v2(m_Database, sql, -1, &statement, NULL) != SQLITE_OK)
+        {
+            bRet = NO;
+            break;
+        }
+        
+        if(sqlite3_step(statement) != SQLITE_DONE)
+        {
+            bRet = NO;
+        }
+        sqlite3_finalize(statement);
+    }while(NO);
+    
+    [self closeDatabase];
+    return bRet;
+}
+
+
+@end

@@ -1,0 +1,47 @@
+//
+//  MOTopView.m
+//  MobileOffice
+//
+//  Created by liyunqin on 15/10/16.
+//  Copyright (c) 2015年 Wenrui. All rights reserved.
+//
+
+#import "MOTopView.h"
+#import "Const.h"
+#import "UIColor+ColorHexString.h"
+
+@implementation MOTopView
+
+-(id)initWithFrame:(CGRect)frame
+{
+    self = [super initWithFrame:frame];
+    if (self) {
+        _topView = [[UIImageView alloc] initWithFrame:CGRectMake(0.0, 0, frame.size.width, IOS6?44:64)];
+        _topView.backgroundColor = [UIColor colorWithHexString:@"00b2f2"];
+        _topView.tag = 4013;
+        [self addSubview:_topView];
+
+        
+        _titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 120, 40)];
+        _titleLabel.textAlignment = NSTextAlignmentCenter;
+        _titleLabel.center = CGPointMake(frame.size.width/2, frame.size.height / 2 + 6);
+        _titleLabel.font = [UIFont boldSystemFontOfSize:20];
+        _titleLabel.textColor = [UIColor whiteColor];
+        [self addSubview:_titleLabel];
+        
+        
+        _backBtn = [UIButton buttonWithType:UIButtonTypeCustom];
+        _backBtn.frame = CGRectMake(10.0, 20.0, 44.0, 44.0);
+        [_backBtn setImage:[UIImage imageNamed:@"ic_action_previous_item_normal"] forState:UIControlStateNormal];
+        [_backBtn setImage:[UIImage imageNamed:@"ic_action_previous_item_press"] forState:UIControlStateHighlighted];
+        _backBtn.hidden = YES;
+        [self addSubview:_backBtn];
+        
+        _rightBtn = [[UIButton alloc] initWithFrame:CGRectMake(frame.size.width - 54, 17.0, 44.0, 44.0)];
+        _rightBtn.hidden = YES;
+        [self addSubview:_rightBtn];
+    }
+    return self;
+}
+
+@end
